@@ -1,18 +1,22 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.6.9/ethers.umd.min.js" integrity="sha512-Veaz5IU2iRpa0BBrJlJeRgfJ7OAHWtVJZTXvgdH7s3ffsLUChllMCqC0Bb+eeRxGlrZ06iYIE/R3KsciCrgv3A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
 <script>
-  generateUrl("https://dweb.link/ipfs/bafkreibu4po5qd2ryi3ie4czaugzmzh3dzhufpaf22c477laywcx5wuxc4");
+  generateUrl("https://bafkreibms2d7hq7ej334fzgpayqfei6uhgtezb2n2ubkm6r7676wrg2lde.ipfs.dweb.link/");
   async function generateUrl(metadataUri) {
-    const metadata = await fetch(metadataUri).then((response) => response.json());
-    const provider = new ethers.providers.getDefaultProvider();
-    // prettier-ignore
-    const abi = [{ "inputs": [ { "internalType": "address", "name": "", "type": "address" } ], "name": "balances", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint64", "name": "_itemId", "type": "uint64" } ], "name": "buy", "outputs": [], "stateMutability": "payable", "type": "function" }]
-    const contract = new ethers.Contract("0x0000000000000000000000000000000000000000", abi, provider);
-    const { data } = await contract.populateTransaction["buy"](metadata.itemId);
-    const chainIds = {
-      goerli: 5,
-    };
-    const script = `<button onClick='(async()=>{if(!window.ethereum)return alert("Please install MetaMask to Purchase");await window.ethereum.enable();console.log(window.ethereum);if(window.ethereum.networkVersion!=="${chainIds[metadata.chain]}")return alert("Please connect to${metadata.chain}");ethereum.request({method:"eth_sendTransaction",params:[{from:window.ethereum.selectedAddress,to:"${metadata.evmContractConditions[0].contractAddress}",value:"0x"+(${metadata.price}).toString(16),data:"${data}"}]});})();'> Buy </button>`;
-    console.log(script);
+    (async () => {
+      if (!window.ethereum) return alert("Please install MetaMask to Purchase");
+      await window.ethereum.enable();
+      const metadata = await fetch(metadataUri).then((res) => res.json());
+      if (window.ethereum.chainId !== metadata.chainId) return alert(`Please connect to ${metadata.chain}`);
+      ethereum.request({
+        method: "eth_sendTransaction",
+        params: [
+          {
+            from: window.ethereum.selectedAddress,
+            to: metadata.evmContractConditions[0].contractAddress,
+            value: "0x" + BigInt(metadata.price).toString(16),
+            data: metadata.transactionData,
+          },
+        ],
+      });
+    })();
   }
 </script>
